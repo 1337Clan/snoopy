@@ -1,0 +1,20 @@
+name: Snoopy
+version: 0
+description: Let's you snoop on people and channels
+
+author: Kymera_Effect
+
+main: com.leetclan.snoopy.Snoopy
+
+commands:
+  snoop:
+    description: Command to snoop on other players' messages and channels
+    permission: snoopy.snoop
+    usage: |
+      /<command> [off|players|channels] [target_names]...
+      Example: /<command> players Kymera_Effect
+      
+permissions:
+  snoopy.snoop:
+    description: Gives access to snoop on players
+    default: op
