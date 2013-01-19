@@ -12,6 +12,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.leetclan.snoopy.SnoopingPlayer;
 import com.leetclan.snoopy.Snoopy;
+import com.leetclan.snoopy.util.Chat;
 
 public class SnoopCommandExecutor extends CommandExecutorChain {
   public static class OffCommand extends BasicCommandExecutor {
@@ -156,6 +157,8 @@ public class SnoopCommandExecutor extends CommandExecutorChain {
     if (!getSnoopy().isSnooping(sender.getName())) {
       getSnoopy().addSnooper(sender.getName());
     }
+    
+    Chat.tell(getSnoopy().getServer().getPlayer(sender.getName()), "{limegreen}Snooping enabled!");
 
     return true;
   }

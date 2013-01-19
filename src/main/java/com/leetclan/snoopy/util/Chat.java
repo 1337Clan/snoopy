@@ -29,15 +29,6 @@ public final class Chat {
   
   private Chat() {}
 
-  public static void welcome(Player player) {
-    player.sendMessage("----------------------------------------");
-    player.sendMessage("Welcome To 1337 Clan Hunger Games! Dev");
-    player.sendMessage($i("{AQUA}For a list of kits {GRAY}(/kit)"));
-    player.sendMessage($i("{AQUA}Choose your kit now: {GRAY}(/kit [KitName])"));
-    player.sendMessage($i("{AQUA}/vote Vote to start the game"));
-    player.sendMessage("----------------------------------------");
-  }
-  
   public static String format(String message, Object...args) {
     message = $i(message);
     return String.format(message, args);
@@ -99,9 +90,13 @@ public final class Chat {
     for (int i = 0; i < message.length(); ++i) {
       switch (message.charAt(i)) {
         case '{':
-          String color = extractChatColor(message, i);
+          int end = balanceInterpolation(message, i);
+          
+          String colorName = message.substring(i + 1, end);
+          ChatColor color = colorMap.containsKey(colorName) ? colorMap.get(colorName) : DEFAULT_COLOR;
+          
           builder.append(color);
-          i += color.length() + 1;
+          i = end;
           break;
 
         // In the case where we escape, and the default case
@@ -119,25 +114,20 @@ public final class Chat {
   }
   
   /**
-   * Extracts the text between the curly braces, or if the curly brace is
-   * unbalanced, extracts the rest of the string.
+   * Find the index of the last closing brace of the color interpolation
    * 
    * @param message the message containing the interpolation
    * @param startIndex the start index of the interpolation
-   * @return the color code for the given interpolated color
+   * @return the index of the last closing brace
    */
-  private static String extractChatColor(String message, int startIndex) {
+  private static int balanceInterpolation(String message, int startIndex) {
     for (int i = startIndex + 1; i < message.length(); ++i) {
-      if (message.charAt(i) != '}') {
-        continue;
+      if (message.charAt(i) == '}') {
+        return i;
       }
-
-      String colorName = message.substring(startIndex + 1, i);
-      ChatColor color = colorMap.containsKey(colorName) ? colorMap.get(colorName) : DEFAULT_COLOR;
-      return color.toString();
     }
     
-    return message.substring(startIndex);
+    return message.length();
   }
   
 }
