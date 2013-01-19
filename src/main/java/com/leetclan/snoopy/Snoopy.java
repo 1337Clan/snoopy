@@ -22,6 +22,7 @@ import com.leetclan.snoopy.util.ServerLogger;
 public class Snoopy extends JavaPlugin {
   private final List<? extends BasicCommandExecutor> commands;
   
+  private final PlayerLookup playerLookup;
   private final Map<String, SnoopingPlayer> snoopers;
   
   public Snoopy() {
@@ -32,6 +33,7 @@ public class Snoopy extends JavaPlugin {
             new SnoopChannelsCommand(this))
         );
     
+    playerLookup = new PlayerLookup(this);
     snoopers = Maps.newHashMap();
   }
   
@@ -58,6 +60,10 @@ public class Snoopy extends JavaPlugin {
         return snooper.isSnoopingOn(target);
       }
     });
+  }
+  
+  public PlayerLookup getPlayerLookup() {
+    return playerLookup;
   }
   
   public boolean isSnooping(String name) {

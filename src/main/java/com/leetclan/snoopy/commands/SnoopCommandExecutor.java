@@ -1,6 +1,7 @@
 package com.leetclan.snoopy.commands;
 
 import java.util.Arrays;
+import java.util.Set;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -24,6 +25,7 @@ public class SnoopCommandExecutor extends CommandExecutorChain {
         String label, String[] args) {
       
       getSnoopy().removeSnooper(sender.getName());
+      Chat.tell(getSnoopy().getServer().getPlayer(sender.getName()), "{red}Snooping disabled for all targets.");
       return true;
     }
 
@@ -42,13 +44,16 @@ public class SnoopCommandExecutor extends CommandExecutorChain {
     }
     
     public abstract String[] getDefaultTargetNames();
-    public abstract void addTarget(SnoopingPlayer snooper, String targetName);
-    public abstract void removeTarget(SnoopingPlayer snooper, String targetName);
+    public abstract int addTarget(SnoopingPlayer snooper, String targetName);
+    public abstract int removeTarget(SnoopingPlayer snooper, String targetName);
 
     public boolean onCommand(CommandSender sender, Command command,
         String label, String[] targetNames) {
       
       if (targetNames.length == 0) targetNames = getDefaultTargetNames();
+      
+      int numNewTargets = 0;
+      int numTargetsRemoved = 0;
       
       SnoopingPlayer snooper = getSnoopy().getSnooper(sender.getName());
       for (String targetName : targetNames) {
@@ -60,11 +65,13 @@ public class SnoopCommandExecutor extends CommandExecutorChain {
         }
 
         if (addTarget) {
-          addTarget(snooper, targetName);
+          numNewTargets += addTarget(snooper, targetName);
         } else {
-          removeTarget(snooper, targetName);
+          numTargetsRemoved += removeTarget(snooper, targetName);
         }
       }
+      
+      Chat.tell(snooper.getPlayer(), "Snooping targets updated: {green}+%d{/}, {red}-%d{/}", numNewTargets, numTargetsRemoved);
       
       return true;
     }
@@ -85,13 +92,36 @@ public class SnoopCommandExecutor extends CommandExecutorChain {
     }
 
     @Override
-    public void addTarget(SnoopingPlayer snooper, String targetName) {
-      snooper.snoopOn(getSnoopy().getServer().getPlayer(targetName));
+    public int addTarget(SnoopingPlayer snooper, String targetName) {
+      Set<Player> players = getSnoopy().getPlayerLookup().matchPlayers(targetName);
+      int numNewTargets = 0;
+      
+      for (Player player : players) {
+        if (player == snooper.getPlayer()) {
+          Chat.tell(snooper.getPlayer(), "{red}You can't snoop on yourself!");
+          continue;
+        }
+        
+        numNewTargets++;
+        snooper.snoopOn(player);
+      }
+      
+      return numNewTargets;
     }
 
     @Override
-    public void removeTarget(SnoopingPlayer snooper, String targetName) {
-      snooper.stopSnoopingOn(getSnoopy().getServer().getPlayer(targetName));
+    public int removeTarget(SnoopingPlayer snooper, String targetName) {
+      Set<Player> players = getSnoopy().getPlayerLookup().matchPlayers(targetName);
+      int numTargetsRemoved = 0;
+      
+      for (Player player : players) {
+        if (snooper.isSnoopingOn(player)) {
+          numTargetsRemoved++;
+          snooper.stopSnoopingOn(player);
+        }
+      }
+      
+      return numTargetsRemoved;
     }
     
     @Override
@@ -121,13 +151,32 @@ public class SnoopCommandExecutor extends CommandExecutorChain {
     }
 
     @Override
-    public void addTarget(SnoopingPlayer snooper, String targetName) {
-      snooper.snoopOn(Herochat.getChannelManager().getChannel(targetName));
+    public int addTarget(SnoopingPlayer snooper, String targetName) {
+      Channel channel = Herochat.getChannelManager().getChannel(targetName);
+      
+      if (channel != null) {
+        snooper.snoopOn(channel);
+        return 1;
+      } else {
+        Chat.scold(snooper.getPlayer(), "- channel '%s' does not exist.", targetName);
+        return 0;
+      }
     }
 
     @Override
-    public void removeTarget(SnoopingPlayer snooper, String targetName) {
-      snooper.stopSnoopingOn(Herochat.getChannelManager().getChannel(targetName));
+    public int removeTarget(SnoopingPlayer snooper, String targetName) {
+      Channel channel = Herochat.getChannelManager().getChannel(targetName);
+      
+      if (channel != null) {
+        if (snooper.isSnoopingOn(channel)) {
+          snooper.stopSnoopingOn(channel);
+          return 1;
+        }
+      } else {
+        Chat.scold(snooper.getPlayer(), "- channel '%s' does not exist.", targetName);
+      }
+
+      return 0;
     }
     
     @Override
@@ -157,8 +206,6 @@ public class SnoopCommandExecutor extends CommandExecutorChain {
     if (!getSnoopy().isSnooping(sender.getName())) {
       getSnoopy().addSnooper(sender.getName());
     }
-    
-    Chat.tell(getSnoopy().getServer().getPlayer(sender.getName()), "{limegreen}Snooping enabled!");
 
     return true;
   }

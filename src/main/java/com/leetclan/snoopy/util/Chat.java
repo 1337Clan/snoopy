@@ -5,6 +5,7 @@ package com.leetclan.snoopy.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -66,7 +67,7 @@ public final class Chat {
    */
   public static void broadcast(String message, Object...args) {
     message = String.format("%s %s", ServerLogger.TAG, message);
-    Bukkit.broadcastMessage(format(message));
+    Bukkit.broadcastMessage(format(message, args));
   }
   
   /**
@@ -86,16 +87,25 @@ public final class Chat {
    */
   public static String $i(String message) {
     StringBuilder builder = new StringBuilder();
+    Stack<ChatColor> colorStack = new Stack<>();
+    colorStack.add(DEFAULT_COLOR);
     
     for (int i = 0; i < message.length(); ++i) {
       switch (message.charAt(i)) {
         case '{':
           int end = balanceInterpolation(message, i);
-          
           String colorName = message.substring(i + 1, end);
-          ChatColor color = colorMap.containsKey(colorName) ? colorMap.get(colorName) : DEFAULT_COLOR;
           
-          builder.append(color);
+          boolean isClosing = colorName.equals("/");
+          
+          if (isClosing) {
+            colorStack.pop();
+          } else {
+            ChatColor color = colorMap.containsKey(colorName) ? colorMap.get(colorName) : DEFAULT_COLOR;
+            colorStack.push(color);
+          }
+          
+          builder.append(colorStack.peek());
           i = end;
           break;
 

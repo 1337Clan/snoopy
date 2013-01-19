@@ -38,9 +38,9 @@ public abstract class CommandExecutorChain extends BasicCommandExecutor {
       String[] args) {
 
     boolean validCommand = onCommand(sender, label, args);
-    if (validCommand && args.length > 1) {
-      List<BasicCommandExecutor> executors = subCommandMap.containsKey(args[1]) ? subCommandMap
-          .get(args[1]) : Lists.<BasicCommandExecutor> newArrayList();
+    if (validCommand && args.length > 0) {
+      List<BasicCommandExecutor> executors = subCommandMap.containsKey(args[0]) ? subCommandMap
+          .get(args[0]) : Lists.<BasicCommandExecutor> newArrayList();
    
       args = Arrays.copyOfRange(args, 1, args.length);    
       
