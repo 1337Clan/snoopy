@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 
 import com.dthielke.herochat.Channel;
 import com.google.common.collect.Sets;
+import com.leetclan.snoopy.util.Chat;
 
 public class SnoopingPlayer {
   private final Player player;
@@ -41,7 +42,7 @@ public class SnoopingPlayer {
   }
   
   public void tellAbout(Player target, String message) {
-    
+    Chat.tell(player, "[snoop] {gray}%s: {green}%s", target.getName(), message);
   }
 
   public Channel[] getTargetChannels() {
@@ -62,6 +63,6 @@ public class SnoopingPlayer {
   }
   
   public void tellAbout(Channel target, Player sender, String message) {
-    
+    Chat.tell(player, "[snoop] {gray}[in %s] %s: {green}%s", target.getName(), sender.getName(), message);
   }
 }

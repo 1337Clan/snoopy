@@ -3,6 +3,7 @@ package com.leetclan.snoopy;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.bukkit.entity.Player;
 
@@ -18,7 +19,7 @@ public class PlayerLookup {
   }
   
   public Set<Player> matchPlayers(final String prefix) {
-    final String regex = "^" + prefix.toLowerCase() + ".*";
+    final String regex = "^" + Pattern.quote(prefix.toLowerCase()) + ".*";
     
     Collection<Player> matchedPlayers = Collections2.filter(Arrays.asList(snoopy.getServer().getOnlinePlayers()), new Predicate<Player>() {
       public boolean apply(Player player) {

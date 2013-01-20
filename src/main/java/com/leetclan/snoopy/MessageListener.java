@@ -29,29 +29,26 @@ public class MessageListener extends SnoopyListener {
   
   public MessageListener(Snoopy snoopy) {
     super(snoopy);
+    
+    snoopy.getServer().getPluginManager().registerEvents(this, snoopy);
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void onChannelChatEvent(ChannelChatEvent event) {
     Channel channel = event.getChannel();
     Collection<SnoopingPlayer> snoopers = getSnoopy().getSnoopersFor(channel);
-
+    
     Chatter sender = event.getSender();
-    Set<Chatter> members = channel.getMembers();
     
     if (snoopers.size() > 0) {
       for (SnoopingPlayer snooper : snoopers) {
         snooper.tellAbout(channel, sender.getPlayer(), event.getMessage());
       }
     } else {
-      for (Chatter member : members) {
-        if (member.equals(sender)) continue;
-        
-        snoopers = getSnoopy().getSnoopersFor(member.getPlayer());
-        
-        for (SnoopingPlayer snooper : snoopers) {
-          snooper.tellAbout(member.getPlayer(), event.getMessage());
-        }
+      snoopers = getSnoopy().getSnoopersFor(sender.getPlayer());
+      
+      for (SnoopingPlayer snooper : snoopers) {
+        snooper.tellAbout(sender.getPlayer(), event.getMessage());
       }
     }
   }

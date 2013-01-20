@@ -44,6 +44,8 @@ public class Snoopy extends JavaPlugin {
     for (BasicCommandExecutor executor : commands) {
       getCommand(executor.getTriggeringCommands()[0]).setExecutor(executor);
     }
+    
+    new MessageListener(this);
   }
   
   public Collection<SnoopingPlayer> getSnoopersFor(final Player target) {

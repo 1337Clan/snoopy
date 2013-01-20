@@ -94,19 +94,31 @@ public class SnoopCommandExecutor extends CommandExecutorChain {
     @Override
     public int addTarget(SnoopingPlayer snooper, String targetName) {
       Set<Player> players = getSnoopy().getPlayerLookup().matchPlayers(targetName);
-      int numNewTargets = 0;
       
-      for (Player player : players) {
-        if (player == snooper.getPlayer()) {
-          Chat.tell(snooper.getPlayer(), "{red}You can't snoop on yourself!");
-          continue;
-        }
+      switch (players.size()) {
+        case 0:
+          Chat.scold(snooper.getPlayer(), "'%s' did not match any players.", targetName);
+          return 0;
+          
+        case 1:
+          Player target = players.toArray(new Player[0])[0];
+          
+          if (target == snooper.getPlayer()) {
+            return 0;
+          }
+            
+          snooper.snoopOn(target);
+          return 1;
         
-        numNewTargets++;
-        snooper.snoopOn(player);
+        default:
+          Chat.scold(snooper.getPlayer(), "Target name '%s' is ambiguous. Did you mean:", targetName);
+          
+          for (Player player : players) {
+            Chat.scold(snooper.getPlayer(), "  - %s", player.getName());
+          }
+          
+          return 0;
       }
-      
-      return numNewTargets;
     }
 
     @Override
@@ -155,12 +167,20 @@ public class SnoopCommandExecutor extends CommandExecutorChain {
       Channel channel = Herochat.getChannelManager().getChannel(targetName);
       
       if (channel != null) {
-        snooper.snoopOn(channel);
-        return 1;
+        if (channel.isMember(Herochat.getChatterManager().getChatter(snooper.getPlayer()))) {
+          Chat.tell(snooper.getPlayer(), "{yellow}- you are already in channel '%s'", targetName);
+          return 0;
+        }
+        
+        if (!snooper.isSnoopingOn(channel)) {
+          snooper.snoopOn(channel);
+          return 1;
+        }
       } else {
         Chat.scold(snooper.getPlayer(), "- channel '%s' does not exist.", targetName);
-        return 0;
       }
+      
+      return 0;
     }
 
     @Override
