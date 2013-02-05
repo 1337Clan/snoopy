@@ -1,65 +1,58 @@
 package com.leetclan.snoopy;
 
 import java.util.Collection;
-import java.util.Locale;
 import java.util.Set;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import com.dthielke.herochat.Channel;
 import com.dthielke.herochat.ChannelChatEvent;
 import com.dthielke.herochat.Chatter;
+import com.dthielke.herochat.ConversationChannel;
+import com.dthielke.herochat.Herochat;
 import com.google.common.collect.Sets;
 
 public class MessageListener extends SnoopyListener {
-  public static final Set<String> triggeringCommands = Sets.newHashSet(
-      "msg",
-      "r", 
-      "mail", 
-      "m", 
-      "t", 
-      "emsg", 
-      "tell", 
-      "er", 
-      "reply", 
-      "ereply", 
-      "email");
-  
   public MessageListener(Snoopy snoopy) {
     super(snoopy);
-    
-    snoopy.getServer().getPluginManager().registerEvents(this, snoopy);
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void onChannelChatEvent(ChannelChatEvent event) {
     Channel channel = event.getChannel();
-    Collection<SnoopingPlayer> snoopers = getSnoopy().getSnoopersFor(channel);
-    
     Chatter sender = event.getSender();
     
-    if (snoopers.size() > 0) {
-      for (SnoopingPlayer snooper : snoopers) {
-        snooper.tellAbout(channel, sender.getPlayer(), event.getMessage());
-      }
-    } else {
-      snoopers = getSnoopy().getSnoopersFor(sender.getPlayer());
+    // Check to see if the channel is a private channel between two people (through messages)
+    if (channel instanceof ConversationChannel) {
+      onConversationChannelChatEvent(sender, event.getMessage(), (ConversationChannel) channel);
+      return;
+    }
+    
+    // Tell the snoopers about a chat in the channel.
+    Collection<SnoopingPlayer> snoopers = getSnoopy().getSnoopersFor(channel);
+    for (SnoopingPlayer snooper : snoopers) {
+      if (channel.isMember(Herochat.getChatterManager().getChatter(snooper.getPlayer()))) continue;
       
-      for (SnoopingPlayer snooper : snoopers) {
-        snooper.tellAbout(sender.getPlayer(), event.getMessage());
-      }
+      snooper.tellAbout(channel, sender.getPlayer(), event.getMessage());
     }
   }
   
-  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
-    String commandName = event.getMessage().toLowerCase(Locale.ENGLISH).split("\\s+")[0].substring(1);
-    if (!triggeringCommands.contains(commandName)) return;
+  private void onConversationChannelChatEvent(Chatter sender, String message, ConversationChannel channel) {
+    Set<Chatter> chatters = channel.getMembers();
+    chatters.remove(sender);
+    Chatter recipient = chatters.toArray(new Chatter[0])[0];
     
-    for (SnoopingPlayer snooper : getSnoopy().getSnoopersFor(event.getPlayer())) {
-      snooper.tellAbout(event.getPlayer(), event.getMessage());
+    Collection<SnoopingPlayer> senderSnoopers = getSnoopy().getSnoopersFor(sender.getPlayer());
+    Collection<SnoopingPlayer> recipientSnoopers = getSnoopy().getSnoopersFor(recipient.getPlayer());
+    
+    Set<SnoopingPlayer> snoopers = Sets.newHashSet(senderSnoopers);
+    snoopers.addAll(recipientSnoopers);
+    
+    for (SnoopingPlayer snooper : snoopers) {
+      if (snooper.equals(sender) || snooper.equals(recipient)) continue;
+      
+      snooper.tellAbout(sender.getPlayer(), recipient.getPlayer(), message);
     }
   }
 }

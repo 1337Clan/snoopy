@@ -12,6 +12,8 @@ public class SnoopingPlayer {
   private final Player player;
   private final Set<Player> targetPlayers;
   private final Set<Channel> targetChannels;
+  private boolean snoopAllPlayers;
+  private boolean snoopAllChannels;
 
   public SnoopingPlayer(Player player) {
     this.player = player;
@@ -29,20 +31,20 @@ public class SnoopingPlayer {
   }
 
   public boolean isSnoopingOn(Player target) {
-    return targetPlayers.contains(target);
+    return targetPlayers.contains(target) || snoopAllPlayers;
   }
 
   public void stopSnoopingOn(Player target) {
-    if (targetPlayers.contains(target))
-      targetPlayers.remove(target);
+    if (targetPlayers.contains(target)) targetPlayers.remove(target);
   }
 
   public void snoopOn(Player target) {
     targetPlayers.add(target);
   }
-  
-  public void tellAbout(Player target, String message) {
-    Chat.tell(player, "[snoop] {gray}%s: {green}%s", target.getName(), message);
+
+  public void tellAbout(Player sender, Player recipient, String message) {
+    Chat.tell(player, "[snoop] {gray}%s -> %s: {green}%s", sender.getName(), recipient.getName(),
+        message);
   }
 
   public Channel[] getTargetChannels() {
@@ -50,19 +52,27 @@ public class SnoopingPlayer {
   }
 
   public boolean isSnoopingOn(Channel target) {
-    return targetChannels.contains(target);
+    return targetChannels.contains(target) || snoopAllChannels;
   }
 
   public void stopSnoopingOn(Channel target) {
-    if (targetChannels.contains(target))
-      targetChannels.remove(target);
+    if (targetChannels.contains(target)) targetChannels.remove(target);
   }
 
   public void snoopOn(Channel target) {
     targetChannels.add(target);
   }
-  
+
   public void tellAbout(Channel target, Player sender, String message) {
-    Chat.tell(player, "[snoop] {gray}[in %s] %s: {green}%s", target.getName(), sender.getName(), message);
+    Chat.tell(player, "[snoop] {gray}[in %s] %s: {green}%s", target.getName(), sender.getName(),
+        message);
+  }
+
+  public void setSnoopAllPlayers(boolean snoopAllPlayers) {
+    this.snoopAllPlayers = snoopAllPlayers;
+  }
+
+  public void setSnoopAllChannels(boolean snoopAllChannels) {
+    this.snoopAllChannels = snoopAllChannels;
   }
 }

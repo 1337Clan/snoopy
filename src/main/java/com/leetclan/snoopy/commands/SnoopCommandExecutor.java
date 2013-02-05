@@ -1,6 +1,5 @@
 package com.leetclan.snoopy.commands;
 
-import java.util.Arrays;
 import java.util.Set;
 
 import org.bukkit.command.Command;
@@ -9,8 +8,6 @@ import org.bukkit.entity.Player;
 
 import com.dthielke.herochat.Channel;
 import com.dthielke.herochat.Herochat;
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import com.leetclan.snoopy.SnoopingPlayer;
 import com.leetclan.snoopy.Snoopy;
 import com.leetclan.snoopy.util.Chat;
@@ -43,19 +40,23 @@ public class SnoopCommandExecutor extends CommandExecutorChain {
       super(snoopy);
     }
     
-    public abstract String[] getDefaultTargetNames();
+    public abstract void snoopAll(SnoopingPlayer snooper);
     public abstract int addTarget(SnoopingPlayer snooper, String targetName);
     public abstract int removeTarget(SnoopingPlayer snooper, String targetName);
 
     public boolean onCommand(CommandSender sender, Command command,
         String label, String[] targetNames) {
       
-      if (targetNames.length == 0) targetNames = getDefaultTargetNames();
+      SnoopingPlayer snooper = getSnoopy().getSnooper(sender.getName());
+      
+      if (targetNames.length == 0) {
+        snoopAll(snooper);
+        return true;
+      }
       
       int numNewTargets = 0;
       int numTargetsRemoved = 0;
       
-      SnoopingPlayer snooper = getSnoopy().getSnooper(sender.getName());
       for (String targetName : targetNames) {
         boolean addTarget = true;
         
@@ -83,12 +84,8 @@ public class SnoopCommandExecutor extends CommandExecutorChain {
     }
 
     @Override
-    public String[] getDefaultTargetNames() {
-      return Collections2.transform(Arrays.asList(getSnoopy().getServer().getOnlinePlayers()), new Function<Player, String>() {
-        public String apply(Player player) {
-          return player.getName();
-        }
-      }).toArray(new String[0]);
+    public void snoopAll(SnoopingPlayer snooper) {
+      snooper.setSnoopAllPlayers(true);
     }
 
     @Override
@@ -154,12 +151,8 @@ public class SnoopCommandExecutor extends CommandExecutorChain {
     }
 
     @Override
-    public String[] getDefaultTargetNames() {
-      return Collections2.transform(Herochat.getChannelManager().getChannels(), new Function<Channel, String>() {
-        public String apply(Channel channel) {
-          return channel.getName();
-        }
-      }).toArray(new String[0]);
+    public void snoopAll(SnoopingPlayer snooper) {
+      snooper.setSnoopAllChannels(true);
     }
 
     @Override

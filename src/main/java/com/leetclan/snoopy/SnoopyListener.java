@@ -7,6 +7,8 @@ public abstract class SnoopyListener implements Listener {
   
   public SnoopyListener(Snoopy snoopy) {
     this.snoopy = snoopy;
+    
+    snoopy.getServer().getPluginManager().registerEvents(this, snoopy);
   }
   
   public Snoopy getSnoopy() {
