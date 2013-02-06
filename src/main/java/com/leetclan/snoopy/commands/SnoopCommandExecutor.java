@@ -21,7 +21,12 @@ public class SnoopCommandExecutor extends CommandExecutorChain {
     public boolean onCommand(CommandSender sender, Command command,
         String label, String[] args) {
       
-      getSnoopy().removeSnooper(sender.getName());
+      SnoopingPlayer snooper = getSnoopy().getSnooper(sender.getName());
+      snooper.setSnoopAllChannels(false);
+      snooper.setSnoopAllPlayers(false);
+      
+      getSnoopy().removeSnooper(snooper.getPlayer().getName());
+      
       Chat.tell(getSnoopy().getServer().getPlayer(sender.getName()), "{red}Snooping disabled for all targets.");
       return true;
     }
