@@ -50,7 +50,7 @@ public class MessageListener extends SnoopyListener {
     snoopers.addAll(recipientSnoopers);
     
     for (SnoopingPlayer snooper : snoopers) {
-      if (snooper.equals(sender) || snooper.equals(recipient)) continue;
+      if (snooper.getPlayer() == sender.getPlayer() || snooper.getPlayer() == recipient.getPlayer()) continue;
       
       snooper.tellAbout(sender.getPlayer(), recipient.getPlayer(), message);
     }

@@ -14,7 +14,7 @@ public class SnoopingPlayer {
   private final Set<Channel> targetChannels;
   private boolean snoopAllPlayers;
   private boolean snoopAllChannels;
-
+  
   public SnoopingPlayer(Player player) {
     this.player = player;
 
@@ -43,7 +43,7 @@ public class SnoopingPlayer {
   }
 
   public void tellAbout(Player sender, Player recipient, String message) {
-    Chat.tell(player, "[snoop] {gray}%s -> %s: {green}%s", sender.getName(), recipient.getName(),
+    Chat.tell(player, "[snoop] {gray}%s -> %s: {aqua}%s", sender.getName(), recipient.getName(),
         message);
   }
 
@@ -64,7 +64,7 @@ public class SnoopingPlayer {
   }
 
   public void tellAbout(Channel target, Player sender, String message) {
-    Chat.tell(player, "[snoop] {gray}[in %s] %s: {green}%s", target.getName(), sender.getName(),
+    Chat.tell(player, "[snoop] {gray}[in %s] %s: {aqua}%s", target.getName(), sender.getName(),
         message);
   }
 
